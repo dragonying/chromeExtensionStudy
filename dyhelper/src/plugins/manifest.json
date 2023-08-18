@@ -36,13 +36,15 @@
                 "css/popup.css"
             ],
             "js": [
-                "js/chunk-vendors.js"
+                "js/chunk-vendors.js",
+                "js/content.js"
             ],
             "run_at": "document_idle"
         }
     ],
     "web_accessible_resources": [
-        "js/inject.js"
+        "js/*",
+        "assets/*"
     ],
     "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
 }

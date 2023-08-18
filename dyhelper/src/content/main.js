@@ -1,5 +1,11 @@
 import { createApp } from 'vue'
 import app from './components/app.vue'
+import Dy from '@/utils/dy'
+const dyObj = new Dy();
+dyObj.userInfo('MS4wLjABAAAALngeicdXUAwtb9W078jsVFFErL_nKawz1t2422-FNqsgrcdY07u6Pd8Ws2YRtf0z').then(res => {
+    alert(res)
+  });
+
 joinContent(app)
 injectJsInsert()
 function joinContent(element) {
@@ -21,3 +27,5 @@ function injectJsInsert() {
         document.body.appendChild(script)
     })
 }
+
+

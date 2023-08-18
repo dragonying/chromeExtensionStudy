@@ -35,7 +35,7 @@ const watchChanges = (dir, lastTimestamp) => {
     timestampForFilesInDirectory(dir).then(timestamp => {
         // 文件没有改动则循环监听watchChanges方法
         if (!lastTimestamp || lastTimestamp === timestamp) {
-            setTimeout(() => watchChanges(dir, timestamp), 1000); // retry after 1s
+            setTimeout(() => watchChanges(dir, timestamp), 3000); // retry after 1s
         } else {
             // 强制刷新页面
             reload();

@@ -1,0 +1,27 @@
+:root {
+	--sidebar-width: 390px;
+}
+
+#root.pushed-by-douzhencang {
+	border-left: var(--sidebar-width) solid transparent;
+}
+
+
+
+
+aside#douzhencang-container {
+	display: grid;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: var(--sidebar-width);
+	height: 100vh;
+	z-index: 1001;
+}
+
+
+iframe#douzhencang {
+	place-self: stretch;
+	border: none;
+}
+

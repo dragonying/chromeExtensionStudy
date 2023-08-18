@@ -1,0 +1,48 @@
+{
+    "manifest_version": 2,
+    "name": "hello-word-plugin",
+    "description": "vue3版本的chrome插件",
+    "version": "1.0.0",
+    "browser_action": {
+        "default_title": "hello-word-plugin",
+        "default_icon": "assets/logo.png",
+        "default_popup": "popup.html"
+    },
+    "permissions": [
+        "storage",
+        "activeTab",
+        "scripting",
+        "notifications",
+        "declarativeContent",
+        "tabs"
+    ],
+    "background": {
+        "scripts": [
+            "js/background.js"
+        ]
+    },
+    "icons": {
+        "16": "assets/logo.png",
+        "48": "assets/logo.png",
+        "128": "assets/logo.png"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "http://*/*",
+                "https://*/*"
+            ],
+            "css": [
+                "css/popup.css"
+            ],
+            "js": [
+                "js/chunk-vendors.js"
+            ],
+            "run_at": "document_idle"
+        }
+    ],
+    "web_accessible_resources": [
+        "js/inject.js"
+    ],
+    "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
+}

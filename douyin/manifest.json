@@ -1,0 +1,42 @@
+{
+   "action": {
+      "default_title": "抖音助手"
+   },
+   "background": {
+      "service_worker": "background.js"
+   },
+   "content_scripts": [
+      {
+         "all_frames": true,
+         "css": [
+            "page/elm.css"
+         ],
+         "js": [
+            "page/elm.js"
+         ],
+         "matches": [
+            "https://www.douyin.com/*",
+            "https://*.douyinpic.com/*"
+         ]
+      }
+   ],
+   "description": "功能: 增加辅助操作按钮",
+   "icons": {
+      "256": "icon-256.png"
+   },
+   "manifest_version": 3,
+   "name": "抖音助手- 提高短视频效率",
+   "version": "2.6.8",
+   "web_accessible_resources": [
+      {
+         "matches": [
+            "https://www.douyin.com/*",
+            "https://*.douyinpic.com/*"
+         ],
+         "resources": [
+            "rl.html",
+            "s.js"
+         ]
+      }
+   ]
+}

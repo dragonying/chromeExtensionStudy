@@ -1,4 +1,4 @@
-export default function (config) {
+function Dy(config) {
     this.defaultWait = 1;//秒
     //配置设置
     if (Object.prototype.toString.call(config) === "[object Object]") {
@@ -78,36 +78,41 @@ export default function (config) {
         })
     }
     this.dyRequest = async (option) => {
-        await this.delay();
-        option.data = {
-            device_platform: "webapp",
-            aid: "6383",
-            channel: "channel_pc_web",
-            pc_client_type: "1",
-            version_code: "170400",
-            version_name: "17.4.0",
-            cookie_enabled: "true",
-            screen_width: "1920",
-            screen_height: "1080",
-            browser_language: "zh-CN",
-            browser_platform: "Win32",
-            browser_name: "Chrome",
-            browser_version: "115.0.0.0",
-            browser_online: "true",
-            engine_name: "Blink",
-            engine_version: "115.0.0.0",
-            os_name: "Windows",
-            os_version: "10",
-            cpu_core_num: "8",
-            device_memory: "8",
-            platform: "PC",
-            downlink: "1.4",
-            effective_type: "3g",
-            webid: this.getWebId(),
-            ...option.data
+        try {
+            await this.delay();
+            option.data = {
+                device_platform: "webapp",
+                aid: "6383",
+                channel: "channel_pc_web",
+                pc_client_type: "1",
+                version_code: "170400",
+                version_name: "17.4.0",
+                cookie_enabled: "true",
+                screen_width: "1920",
+                screen_height: "1080",
+                browser_language: "zh-CN",
+                browser_platform: "Win32",
+                browser_name: "Chrome",
+                browser_version: "115.0.0.0",
+                browser_online: "true",
+                engine_name: "Blink",
+                engine_version: "115.0.0.0",
+                os_name: "Windows",
+                os_version: "10",
+                cpu_core_num: "8",
+                device_memory: "8",
+                platform: "PC",
+                downlink: "1.4",
+                effective_type: "3g",
+                webid: this.getWebId(),
+                ...option.data
+            }
+            const res = await this.ajax(option);
+            return JSON.parse(res);
+        } catch (e) {
+            console.error(e);
         }
-        const res = await this.ajax(option);
-        return JSON.parse(res);
+        return {};
     }
     this.delay = async (t) => {
         return await new Promise((resolve, reject) => {
@@ -134,7 +139,6 @@ export default function (config) {
                 downlink: "6.1",
                 effective_type: "4g",
                 round_trip_time: "250",
-                webid: "7214687897277842983",
             },
         })
     }
@@ -219,18 +223,18 @@ export default function (config) {
     }
 
     /*****************************下载 下载************************************** */
-    this.download = (key) => {
+    this.download = async (data = []) => {
         return new Promise((resolve, reject) => {
             try {
-                let data = localStorage.getItem(key) || null;
                 if (!data.length) {
-                    console.log(`...... ${key} 暂无数据可下载 ......`);
+                    console.log(`...... 暂无数据可下载 ......`);
                     resolve();
                     return;
                 }
+                console.log(`...... 开始下载数据 ......`);
                 let element = document.createElement('a');
                 element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(data));
-                element.setAttribute('download', `${key}_${parseInt(Math.random() * 10000)}.json`);
+                element.setAttribute('download', `${parseInt(Math.random() * 10000)}.json`);
                 element.style.display = 'none';
                 document.body.appendChild(element);
                 element.click();
@@ -262,12 +266,77 @@ export default function (config) {
     this.getUserProList = async (sec_user_id, callBack) => {
         let cursor = 0;
         while (true) {
-            const { aweme_list, has_more, max_cursor } = await dy.userProList(sec_user_id, cursor);
+            const { aweme_list, has_more, max_cursor } = await this.userProList(sec_user_id, cursor);
             if (!has_more || !aweme_list?.length) {
                 break;
             }
-            callBack(aweme_list)
+            await callBack(aweme_list)
             cursor = max_cursor;
         }
     }
+
+    this.userData = [];
+    this.localKey = 'commentUids';
+    //获取评论区活跃的用户
+    this.getProCommentListActiveUser = async (aweme_id) => {
+        let uids = JSON.parse(localStorage.getItem(this.localKey)) || [];
+        this.userData = uids;
+        const activeTime = (new Date()).getTime() / 1000 - 2 * 24 * 3600;//2天内活跃
+        const awemeCountLimit = 2;
+        const followerCountLimit = 200;
+        const downLengthLimit = 1000;
+        let cursor = 0, count = 20;
+        try {
+            while (true) {
+                const { comments, has_more } = await this.proCommentList(aweme_id, cursor, count);
+                while (comments.length) {
+                    const { user: { sec_uid, uid, nickname, signature } } = comments.shift();
+                    console.log('已采集个数：' + this.userData.length, { nickname, uid, signature })
+                    // const { user: userInfo } = await this.userInfo(sec_uid);
+                    // const { uid, follower_count, ip_location, nickname, aweme_count, signature,gender } = userInfo;
+                    // gender 1男 2女
+                    // console.log('已采集个数：' + this.userData.length, { nickname, ip_location, signature, follower_count, aweme_count })
+                    // if (aweme_count < awemeCountLimit || follower_count < followerCountLimit) {
+                    //     continue;
+                    // }
+                    // const { aweme_list } = await this.userProList(sec_uid, 0);
+                    // if (!aweme_list.length || aweme_list.length < awemeCountLimit || aweme_list[0].create_time < activeTime) {
+                    //     continue;
+                    // }
+                    this.userData.push(uid);
+                    uid && uids.indexOf(uid) < 0 && uids.push(uid);
+                    if (this.userData.length >= downLengthLimit) {
+                        await this.download(this.userData);
+                        this.userData = [];
+                    }
+                }
+                if (!has_more) {
+                    break;
+                }
+                cursor += count;
+            }
+        } catch (e) {
+        }
+
+        localStorage.setItem(this.localKey, JSON.stringify(uids));
+
+        console.log('---------- 结束 -----------')
+    }
 }
+
+//采集用户作品下所有活跃的评论者
+let dy = new Dy({ defaultWait: 1 });
+// dy.getUserProList(window.location.pathname.match(/user\/(.*)/)[1], async (aweme_list) => {
+//     while (aweme_list.length) {
+//         const { aweme_id, desc, statistics } = aweme_list.shift();
+//         console.log('-----------------', { aweme_id, desc, statistics }, '-----------------')
+//         await dy.getProCommentListActiveUser(aweme_id);
+//     }
+// });
+
+dy.getProCommentListActiveUser(window.location.search.match(/modal_id=(\d+)/)[1]);
+
+if (dy.userData.length) {
+    dy.download(dy.userData);
+}
+// export default  DY;

@@ -270,7 +270,10 @@ function Dy(config) {
             if (!has_more || !aweme_list?.length) {
                 break;
             }
-            await callBack(aweme_list)
+            let finish = await callBack(aweme_list);
+            if (finish) {
+                break;
+            }
             cursor = max_cursor;
         }
     }
@@ -322,10 +325,61 @@ function Dy(config) {
 
         console.log('---------- 结束 -----------')
     }
+
+    //下载用户作品
+    this.downUserProList = async (key, n) => {
+        let limit = n || 999999999999;
+        let data = JSON.parse(localStorage.getItem(key)) || [];
+        await this.getUserProList(window.location.pathname.match(/user\/(.*)/)[1], async (aweme_list) => {
+            console.log(`-------------- total: ${data.length} ------------------`)
+            data.push(...aweme_list.map(o => {
+                const { aweme_id, desc, music, author, share_url, video, statistics } = o || {};
+                const { nickname, avatar_thumb, sec_uid, uid, aweme_count, following_count, follower_count, favoriting_count, total_favorited } = author || {};
+                const { play_url, avatar_medium, title } = music || {};
+                const { play_addr, play_addr_265, play_addr_h264, cover, duration } = video || {};
+                console.log(`${aweme_id} ---- ${desc}`)
+                return {
+                    aweme_id,
+                    desc,
+                    share_url,
+                    statistics,
+                    author: {
+                        nickname, avatar_thumb, sec_uid, uid,
+                        statistic: {
+                            aweme_count, following_count, follower_count, favoriting_count, total_favorited
+                        }
+                    },
+                    video: {
+                        duration,
+                        cover: cover?.url_list?.pop(),
+                        paly_url: {
+                            play_addr: play_addr?.url_list,
+                            play_addr_265: play_addr_265?.url_list,
+                            play_addr_h264: play_addr_h264?.url_list
+                        }
+                    },
+                    music: {
+                        title: title,
+                        play_url: play_url?.url_list?.pop(),
+                        avatar_medium: avatar_medium?.url_list?.pop(),
+                    },
+                }
+            }));
+            localStorage.setItem(key, JSON.stringify(data));
+            return data.length >= limit;
+        });
+
+
+        this.download(JSON.stringify(data));
+        console.log(`数据条数：${data.length} 条 ， 下载完毕`);
+
+    }
 }
 
 //采集用户作品下所有活跃的评论者
-let dy = new Dy({ defaultWait: 1 });
+let dy = new Dy({ defaultWait: 2 });
+dy.downUserProList('proList_武术', 30);
+
 // dy.getUserProList(window.location.pathname.match(/user\/(.*)/)[1], async (aweme_list) => {
 //     while (aweme_list.length) {
 //         const { aweme_id, desc, statistics } = aweme_list.shift();
@@ -334,9 +388,11 @@ let dy = new Dy({ defaultWait: 1 });
 //     }
 // });
 
-dy.getProCommentListActiveUser(window.location.search.match(/modal_id=(\d+)/)[1]);
+// dy.getProCommentListActiveUser(window.location.search.match(/modal_id=(\d+)/)[1]);
 
-if (dy.userData.length) {
-    dy.download(dy.userData);
-}
+// if (dy.userData.length) {
+//     dy.download(dy.userData);
+// }
 // export default  DY;
+
+

@@ -377,8 +377,8 @@ function Dy(config) {
 }
 
 //采集用户作品下所有活跃的评论者
-let dy = new Dy({ defaultWait: 2 });
-dy.downUserProList('proList_武术', 30);
+// let dy = new Dy({ defaultWait: 2 });
+// dy.downUserProList('proList_武术', 30);
 
 // dy.getUserProList(window.location.pathname.match(/user\/(.*)/)[1], async (aweme_list) => {
 //     while (aweme_list.length) {
@@ -393,6 +393,6 @@ dy.downUserProList('proList_武术', 30);
 // if (dy.userData.length) {
 //     dy.download(dy.userData);
 // }
-// export default  DY;
+export default  DY;
 
 

@@ -29,12 +29,13 @@
     "content_scripts": [
         {
             "matches": [
-                "http://*/*",
-                "https://*/*"
+                "http://www.douyin.com/*",
+                "https://www.douyin.com/*"
             ],
             "css": [
                 "css/popup.css",
                 "css/content.css",
+                "css/custom.css",
                 "css/chunk-vendors.css"
             ],
             "js": [

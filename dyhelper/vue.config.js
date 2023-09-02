@@ -9,6 +9,10 @@ const copyFiles = [{
 }, {
   from: path.resolve("src/plugins/inject.js"),
   to: path.resolve("dist/js")
+},
+{
+  from: path.resolve("src/content/custom.css"),
+  to: path.resolve("dist/css")
 }
 ];// 复制插件
 const plugins = [new CopyWebpackPlugin({ patterns: copyFiles })];// 页面文件

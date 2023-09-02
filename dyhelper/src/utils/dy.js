@@ -1,4 +1,4 @@
-function Dy(config) {
+function DY(config) {
     this.defaultWait = 1;//秒
     //配置设置
     if (Object.prototype.toString.call(config) === "[object Object]") {
@@ -104,7 +104,9 @@ function Dy(config) {
                 platform: "PC",
                 downlink: "1.4",
                 effective_type: "3g",
-                webid: this.getWebId(),
+                msToken: localStorage.getItem('msToken'),
+                webid: localStorage.getItem('webId'),
+                // 'X-Bogus': 'DFSzswVuXOUANcTOty2KQF9WX7rn',
                 ...option.data
             }
             const res = await this.ajax(option);
@@ -326,6 +328,37 @@ function Dy(config) {
         console.log('---------- 结束 -----------')
     }
 
+    this.getProCommentList = async (aweme_id, callBack) => {
+        let cursor = 0, count = 20;
+        try {
+            while (true) {
+                const { comments, has_more } = await this.proCommentList(aweme_id, cursor, count);
+                while (comments.length) {
+                    const comment = comments.shift();
+                    const { user: { sec_uid, uid, nickname, signature } } = comment;
+                    // const { user: userInfo } = await this.userInfo(sec_uid);
+                    // const { follower_count, ip_location, aweme_count, gender } = userInfo;
+
+                    // gender 1男 2女
+                    // console.log('已采集个数：' + this.userData.length, { nickname, ip_location, signature, follower_count, aweme_count })
+                    // if (aweme_count < awemeCountLimit || follower_count < followerCountLimit) {
+                    //     continue;
+                    // }
+                    // const { aweme_list } = await this.userProList(sec_uid, 0);
+                    // if (!aweme_list.length || aweme_list.length < awemeCountLimit || aweme_list[0].create_time < activeTime) {
+                    //     continue;
+                    // }
+                    typeof callBack == 'function' && await callBack({ ...comment });
+                }
+                if (!has_more) {
+                    break;
+                }
+                cursor += count;
+            }
+        } catch (e) {
+        }
+    }
+
     //下载用户作品
     this.downUserProList = async (key, n) => {
         let limit = n || 999999999999;
@@ -393,6 +426,6 @@ function Dy(config) {
 // if (dy.userData.length) {
 //     dy.download(dy.userData);
 // }
-export default  DY;
+export default DY;
 
 

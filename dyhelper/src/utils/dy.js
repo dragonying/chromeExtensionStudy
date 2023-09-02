@@ -1,5 +1,6 @@
 function DY(config) {
     this.defaultWait = 1;//秒
+    this.isStop = false;
     //配置设置
     if (Object.prototype.toString.call(config) === "[object Object]") {
         for (let i in config) {
@@ -10,7 +11,9 @@ function DY(config) {
     this.setWaitTime = (t) => {
         this.defaultWait = t;
     }
-
+    this.changeTaskStatus = (status) => {
+        this.isStop = status === undefined ? !this.isStop : status;
+    }
     this.ajax = async (obj) => {
         return new Promise((resolve, reject) => {
             //创建AJAX对象
@@ -328,12 +331,26 @@ function DY(config) {
         console.log('---------- 结束 -----------')
     }
 
-    this.getProCommentList = async (aweme_id, callBack) => {
-        let cursor = 0, count = 20;
+    this.commentApiParam = (aweme_id, data) => {
+        let params = JSON.parse(localStorage.getItem('commentApiParam')) || {};
+        let param = params[aweme_id] || { cursor: 0, count: 20 };
+        if (data) {
+            param = { ...param, ...data };
+            params[aweme_id] = param;
+            localStorage.setItem('commentApiParam', JSON.stringify(params));
+        }
+        return param;
+    }
+    this.getUserProCommentList = async (aweme_id, callBack, finishCallBack) => {
+        let { cursor, count } = this.commentApiParam(aweme_id);
         try {
             while (true) {
+                if (this.isStop) {
+                    break;
+                }
                 const { comments, has_more } = await this.proCommentList(aweme_id, cursor, count);
-                while (comments.length) {
+
+                while (comments && comments.length) {
                     const comment = comments.shift();
                     const { user: { sec_uid, uid, nickname, signature } } = comment;
                     // const { user: userInfo } = await this.userInfo(sec_uid);
@@ -350,10 +367,13 @@ function DY(config) {
                     // }
                     typeof callBack == 'function' && await callBack({ ...comment });
                 }
+                cursor += count;
+                this.commentApiParam(aweme_id, { cursor, count });
+
                 if (!has_more) {
+                    typeof finishCallBack == 'function' && finishCallBack();
                     break;
                 }
-                cursor += count;
             }
         } catch (e) {
         }
